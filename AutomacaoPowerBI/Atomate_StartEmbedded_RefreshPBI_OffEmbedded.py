@@ -84,7 +84,7 @@ if (statusrefresh == 'Unknown') and (refreshType != 'OnDemand'):
     cancel_refresh = requests.delete(url=cancel_url, headers=header)
 elif (statusrefresh == 'Unknown') and (refreshType == 'OnDemand'):
     print('Dataset com uma atualização OnDemand, parando os processos')
-    print(exit())
+    exit()
 
 print('Ok')
 
