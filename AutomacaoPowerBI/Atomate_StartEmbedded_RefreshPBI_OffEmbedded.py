@@ -89,7 +89,7 @@ elif (statusrefresh == 'Unknown') and (refreshType == 'OnDemand'):
 print('Ok')
 
 
-# # Generate the token to turn on the embedded capability
+# # Generate the token to turn on the embedded capacity
 context_start = adal.AuthenticationContext(authority=authority_url,
                                      validate_authority=True,
                                      api_version=None)
@@ -109,7 +109,7 @@ capacity_start = requests.post(url=start_url, headers=header_start)
 print(capacity_start.raise_for_status())
 
 
-# # Creates a loop that checks if the capability is active, before running the rest of the code
+# # Creates a loop that checks if the capacity is active, before running the rest of the code
 status_url = f'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PowerBIDedicated/capacities?api-version=2021-01-01'
 
 status = ''
@@ -131,16 +131,16 @@ token = context.acquire_token_with_client_credentials(resource_url, client_id, c
 access_token = token.get('accessToken')
 
 
-# # Move workspace to embedded capability
+# # Move workspace to embedded capacity
 headeraply = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
 
 body_capacity = json.dumps({'capacityId':f'{capacidadeId}'})
 
 capacity_url = f'https://api.powerbi.com/v1.0/myorg/groups/{groupId}/AssignToCapacity'
 
-capacite = requests.post(url=capacity_url, headers=headeraply, data=body_capacity)
+move_workspace = requests.post(url=capacity_url, headers=headeraply, data=body_capacity)
 
-print(capacite.raise_for_status())
+print(move_workspace.raise_for_status())
 
 
 # # Generate a new token for accessing Power BI APIs
@@ -189,16 +189,16 @@ access_token = token.get('accessToken')
 # # Takes workspace out of embedded capacity
 headeraply = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
 
-teste = json.dumps({'capacityId':'00000000-0000-0000-0000-000000000000'})
+capacity_body_remove = json.dumps({'capacityId':'00000000-0000-0000-0000-000000000000'})
 
-capacite_url = f'https://api.powerbi.com/v1.0/myorg/groups/{groupId}/AssignToCapacity'
+capacity_url = f'https://api.powerbi.com/v1.0/myorg/groups/{groupId}/AssignToCapacity'
 
-capacite = requests.post(url=capacite_url, headers=headeraply, data=teste)
+detach_capacity = requests.post(url=capacity_url, headers=headeraply, data=capacity_body_remove)
 
-print(capacite.raise_for_status())
+print(detach_capacity.raise_for_status())
 
 
-# # Generate a new token to turn on the embedded capability
+# # Generate a new token to turn on the embedded capacity
 context_start = adal.AuthenticationContext(authority=authority_url,
                                      validate_authority=True,
                                      api_version=None)
