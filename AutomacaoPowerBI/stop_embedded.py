@@ -13,10 +13,6 @@ subscriptionId = ''
 resourceGroupName = ''
 dedicatedCapacityName = ''
 
-capacidadeId = ''
-groupId = ''
-datasetId = ''
-
 authority_url = f'https://login.microsoftonline.com/{tenant_id}'
 resource_url = 'https://analysis.windows.net/powerbi/api'
 resource_azure_url = 'https://management.azure.com/'
@@ -51,6 +47,3 @@ elif status == 'Succeeded':
     print(status)
     capacity_status = requests.post(url=stop_url, headers=header) 
     print('Embedded on, shutdown successfully.')
-
-
-   
