@@ -57,14 +57,27 @@ datasetId = ''
 # Necessary to interrupt the process due to an api limitation that cancels the dataset update, according to the documentation, OnDemand type updates cannot be canceled.
 
 # Generate token for accessing Power BI APIs
-context = adal.AuthenticationContext(authority=authority_url,
-                                     validate_authority=True,
-                                     api_version=None)
+def access_token():
+    context = adal.AuthenticationContext(authority=authority_url,
+                                        validate_authority=True,
+                                        api_version=None)
 
-token = context.acquire_token_with_client_credentials(resource_url, client_id, client_secret)
-access_token = token.get('accessToken')
+    token = context.acquire_token_with_client_credentials(resource_url, client_id, client_secret)
+    access_token = token.get('accessToken')
+    return access_token
 
-header = {'Authorization': f'Bearer {access_token}'}
+# # Generate the token to turn on the embedded capacity
+def access_token_azure():
+    context_start = adal.AuthenticationContext(authority=authority_url,
+                                        validate_authority=True,
+                                        api_version=None)
+
+    token = context_start.acquire_token_with_client_credentials(resource_azure_url, client_id, client_secret)
+
+    access_token_azure = token.get('accessToken')
+    return access_token_azure
+
+header = {'Authorization': f'Bearer {access_token()}'}
 
 #  Get status dataset
 statuspbi_url = f'https://api.powerbi.com/v1.0/myorg/groups/{groupId}/datasets/{datasetId}/refreshes?$top=1'
@@ -89,20 +102,10 @@ elif (statusrefresh == 'Unknown') and (refreshType == 'OnDemand'):
 print('Ok')
 
 
-# # Generate the token to turn on the embedded capacity
-context_start = adal.AuthenticationContext(authority=authority_url,
-                                     validate_authority=True,
-                                     api_version=None)
-
-token = context_start.acquire_token_with_client_credentials(resource_azure_url, client_id, client_secret)
-
-access_token_azure = token.get('accessToken')
-
-
 # # Turn on Power BI Embedded Capacity
 start_url = f'https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.PowerBIDedicated/capacities/{dedicatedCapacityName}/resume?api-version=2021-01-01'
 
-header_start = {'Authorization': f'Bearer {access_token_azure}'}
+header_start = {'Authorization': f'Bearer {access_token_azure()}'}
 
 capacity_start = requests.post(url=start_url, headers=header_start)
 
@@ -120,19 +123,8 @@ while status != 'Succeeded':
     status = status_capacity['value'][0]['properties']['state']
 print('Active capacity')
 
-
-# # Generate token for accessing Power BI APIs
-context = adal.AuthenticationContext(authority=authority_url,
-                                     validate_authority=True,
-                                     api_version=None)
-
-token = context.acquire_token_with_client_credentials(resource_url, client_id, client_secret)
-
-access_token = token.get('accessToken')
-
-
 # # Move workspace to embedded capacity
-headeraply = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
+headeraply = {'Authorization': f'Bearer {access_token()}', 'Content-Type': 'application/json'}
 
 body_capacity = json.dumps({'capacityId':f'{capacidadeId}'})
 
@@ -142,21 +134,10 @@ move_workspace = requests.post(url=capacity_url, headers=headeraply, data=body_c
 
 print(move_workspace.raise_for_status())
 
-
-# # Generate a new token for accessing Power BI APIs
-context = adal.AuthenticationContext(authority=authority_url,
-                                     validate_authority=True,
-                                     api_version=None)
-
-token = context.acquire_token_with_client_credentials(resource_url, client_id, client_secret)
-
-access_token = token.get('accessToken')
-
-
 # # Refresh Power BI Dataset in Server
 refresh_url = f'https://api.powerbi.com/v1.0/myorg/groups/{groupId}/datasets/{datasetId}/refreshes'
 
-header = {'Authorization': f'Bearer {access_token}'}
+header = {'Authorization': f'Bearer {access_token()}'}
 
 r = requests.post(url=refresh_url, headers=header)
 
@@ -175,19 +156,8 @@ while statuswhile == 'Unknown':
 
 print('Refresh completed')
 
-
-# # Generate a new token for accessing Power BI APIs
-context = adal.AuthenticationContext(authority=authority_url,
-                                     validate_authority=True,
-                                     api_version=None)
-
-token = context.acquire_token_with_client_credentials(resource_url, client_id, client_secret)
-
-access_token = token.get('accessToken')
-
-
 # # Takes workspace out of embedded capacity
-headeraply = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
+headeraply = {'Authorization': f'Bearer {access_token()}', 'Content-Type': 'application/json'}
 
 capacity_body_remove = json.dumps({'capacityId':'00000000-0000-0000-0000-000000000000'})
 
@@ -197,21 +167,10 @@ detach_capacity = requests.post(url=capacity_url, headers=headeraply, data=capac
 
 print(detach_capacity.raise_for_status())
 
-
-# # Generate a new token to turn on the embedded capacity
-context_start = adal.AuthenticationContext(authority=authority_url,
-                                     validate_authority=True,
-                                     api_version=None)
-
-token = context_start.acquire_token_with_client_credentials(resource_azure_url, client_id, client_secret)
-
-access_token_azure = token.get('accessToken')
-
-
 # # Stop the Power BI Embedded Capacity
 stop_url =  f'https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.PowerBIDedicated/capacities/{dedicatedCapacityName}/suspend?api-version=2021-01-01'
 
-header = {'Authorization': f'Bearer {access_token_azure}'}
+header = {'Authorization': f'Bearer {access_token_azure()}'}
 
 capacity_status = requests.post(url=stop_url, headers=header)
 
